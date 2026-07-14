@@ -9,5 +9,6 @@ public class GymtrackBackendApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(GymtrackBackendApplication.class, args);
 	}
+	
 
 }

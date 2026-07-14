@@ -1,5 +1,4 @@
 package com.example.gymtrack_backend.service;
-
 import com.example.gymtrack_backend.entities.Socio;
 import com.example.gymtrack_backend.repository.SocioRepository;
 import org.springframework.beans.factory.annotation.Autowired;

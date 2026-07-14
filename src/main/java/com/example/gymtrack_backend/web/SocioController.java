@@ -21,15 +21,15 @@ public class SocioController {
         return socioService.obtenerTodos();
     }
 
-    // GET - Obtener socio por ID
-    @GetMapping("/{id}")
+    // GET- read - Obtener socio por ID
+    @GetMapping ("/{id}")
     public ResponseEntity<Socio> obtenerPorId(@PathVariable Long id) {
         return socioService.obtenerPorId(id)
             .map(ResponseEntity::ok)
             .orElse(ResponseEntity.notFound().build());
     }
 
-    // POST - Crear nuevo socio
+    // POST- create - Crear nuevo socio
     @PostMapping
     public ResponseEntity<Socio> crear(@RequestBody Socio socio) {
         try {
@@ -39,7 +39,7 @@ public class SocioController {
         }
     }
 
-    // PUT - Actualizar socio
+    // PUT- update - Actualizar socio
     @PutMapping("/{id}")
     public ResponseEntity<Socio> actualizar(@PathVariable Long id, 
                                              @RequestBody Socio socio) {
