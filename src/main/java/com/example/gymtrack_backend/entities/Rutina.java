@@ -3,6 +3,7 @@ package com.example.gymtrack_backend.entities;
 import jakarta.persistence.*;
 import lombok.Data;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -27,9 +28,9 @@ public class Rutina {
     @Column(columnDefinition = "TEXT")
     private String descripcion;
 
-    // Relación ManyToOne: muchas rutinas pertenecen a un Socio
+    // Relación ManyToOne: muchas rutinas pertenecen a un Socio (null = rutina general/template)
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "socio_id", nullable = false)
+    @JoinColumn(name = "socio_id", nullable = true)
     private Socio socio;
 
     // Fecha de creación: se setea automáticamente al persistir
@@ -44,6 +45,28 @@ public class Rutina {
     protected void onCrear() {
         this.fechaCreacion = LocalDateTime.now();
     }
+
+    /**
+     * Trenes musculares que cubre esta rutina.
+     * Ej: ["SUPERIOR", "CORE"] — múltiple selección.
+     */
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "rutina_trenes", joinColumns = @JoinColumn(name = "rutina_id"))
+    @Column(name = "tren")
+    private List<String> trenes = new ArrayList<>();
+
+    /**
+     * Nivel de dificultad de la rutina: BAJA, MEDIA, ALTA.
+     * Especialmente útil en rutinas generales para ayudar a los socios a elegir.
+     */
+    @Column(name = "dificultad", length = 20)
+    private String dificultad;
+
+    /** Días de la semana en que se realiza esta rutina, ej: ["LUNES", "MIÉRCOLES"] */
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "rutina_dias", joinColumns = @JoinColumn(name = "rutina_id"))
+    @Column(name = "dia")
+    private List<String> diasSemana = new ArrayList<>();
 
     // Relación OneToMany: una rutina puede tener muchos ejercicios
     // (lista de ejercicios se añadirá cuando exista la entidad Ejercicio)

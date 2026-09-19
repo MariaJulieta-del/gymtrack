@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Data;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @Data
 @Entity
@@ -40,6 +41,12 @@ public class Socio {
     // Historial: última vez que se modificó el registro
     @Column(name = "fecha_modificacion")
     private LocalDateTime fechaModificacion;
+
+    /** Disciplina asignada al socio (opcional) */
+    @ManyToOne(fetch = FetchType.EAGER, optional = true)
+    @JoinColumn(name = "disciplina_id", nullable = true)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+    private Disciplina disciplina;
 
     @PrePersist
     protected void onCreate() {

@@ -58,9 +58,43 @@ public class AsistenciaService {
         boolean conDeuda = false;
         String  observacion = null;
 
+        // Campos para info de membresía en la respuesta
+        java.time.LocalDate fechaVencimiento  = null;
+        String              tipoMembresia     = null;
+        Integer             entradasDisponibles = null;
+        Integer             entradasUsadas    = null;
+        Integer             entradasRestantes = null;
+
         if (!activas.isEmpty()) {
             // ── Caso 1: tiene membresía activa ──
-            tieneAcceso = true;
+            Membresia activa = activas.get(0);
+            fechaVencimiento    = activa.getFechaVencimiento();
+            tipoMembresia       = activa.getTipoMembresia();
+            entradasDisponibles = activa.getEntradasDisponibles();
+
+            if (entradasDisponibles != null) {
+                // Plan por entradas (punch-card)
+                long usadas = asistenciaRepo.countEntradasEnPeriodo(
+                        socio.getId(), activa.getFechaInicio(), activa.getFechaVencimiento());
+                entradasUsadas = (int) usadas;
+                int restantes  = entradasDisponibles - entradasUsadas;
+                entradasRestantes = Math.max(0, restantes);
+
+                if (restantes <= 0) {
+                    tieneAcceso = false;
+                    observacion = "Acceso denegado: agotaste las " + entradasDisponibles + " entradas del pase. Renovar membresía.";
+                } else {
+                    tieneAcceso = true;
+                    if (restantes == 1) {
+                        observacion = "⚠️ Última entrada del pase. Quedan 0 luego de este ingreso.";
+                    } else if (restantes <= 3) {
+                        observacion = "⚠️ Quedan solo " + (restantes - 1) + " entrada" + ((restantes - 1) != 1 ? "s" : "") + " después de este ingreso.";
+                    }
+                }
+            } else {
+                // Plan por tiempo (comportamiento estándar)
+                tieneAcceso = true;
+            }
 
         } else {
             // 3. Verificar membresía PENDIENTE_PAGO (fiado)
@@ -69,25 +103,15 @@ public class AsistenciaService {
 
             if (!pendientes.isEmpty()) {
                 Membresia pendiente = pendientes.get(0);
-                long ingresosConDeuda = asistenciaRepo.countIngresosConDeuda(
-                        socio.getId(), pendiente.getFechaInicio());
-
-                if (ingresosConDeuda >= 1) {
-                    // ── Caso 2b: ya usó su ingreso de cortesía → BLOQUEADO ──
-                    tieneAcceso = false;
-                    observacion = "Acceso bloqueado: ya ingresó 1 vez con deuda pendiente. "
-                                + "Debe abonar $" + pendiente.getPrecio().toPlainString()
-                                + " para continuar.";
-                } else {
-                    // ── Caso 2a: primer ingreso con deuda → WARNING ──
-                    tieneAcceso = true;
-                    conDeuda    = true;
-                    observacion = "⚠️ ÚLTIMO ingreso permitido con deuda de $"
-                                + pendiente.getPrecio().toPlainString()
-                                + ". Debe abonar antes de la próxima visita.";
-                }
+                fechaVencimiento = pendiente.getFechaVencimiento();
+                tipoMembresia    = pendiente.getTipoMembresia();
+                // ── Membresía PENDIENTE_PAGO → acceso bloqueado inmediatamente ──
+                tieneAcceso = false;
+                observacion = "Acceso denegado: membresía pendiente de pago ($"
+                            + pendiente.getPrecio().toPlainString()
+                            + "). Debe abonar para ingresar.";
             } else {
-                // ── Caso 3: sin membresía válida ──
+                // ── Sin membresía válida ──
                 tieneAcceso = false;
                 observacion = "Acceso denegado: no tiene membresía activa";
             }
@@ -104,7 +128,15 @@ public class AsistenciaService {
         asistencia.setObservacion(observacion);
         asistenciaRepo.save(asistencia);
 
-        return mapear(asistencia);
+        // Si es un pase por entradas y se permitió el acceso, actualizamos el contador
+        // (la nueva asistencia ya fue guardada, así que entradasUsadas aumenta en 1)
+        if (entradasDisponibles != null && tieneAcceso && entradasUsadas != null) {
+            entradasUsadas    += 1;
+            entradasRestantes  = Math.max(0, entradasDisponibles - entradasUsadas);
+        }
+
+        return mapearConMembresia(asistencia, fechaVencimiento, tipoMembresia,
+                                  entradasDisponibles, entradasUsadas, entradasRestantes);
     }
 
     public List<AsistenciaResponseDTO> listarHoy() {
@@ -127,6 +159,16 @@ public class AsistenciaService {
     }
 
     private AsistenciaResponseDTO mapear(Asistencia a) {
+        return mapearConMembresia(a, null, null, null, null, null);
+    }
+
+    private AsistenciaResponseDTO mapearConMembresia(
+            Asistencia a,
+            java.time.LocalDate fechaVencimiento,
+            String tipoMembresia,
+            Integer entradasDisponibles,
+            Integer entradasUsadas,
+            Integer entradasRestantes) {
         return new AsistenciaResponseDTO(
                 a.getId(),
                 a.getSocio().getId(),
@@ -137,7 +179,12 @@ public class AsistenciaService {
                 a.getTipo(),
                 a.getPermitido(),
                 a.getObservacion(),
-                a.getConDeuda()
+                a.getConDeuda(),
+                fechaVencimiento,
+                tipoMembresia,
+                entradasDisponibles,
+                entradasUsadas,
+                entradasRestantes
         );
     }
 }

@@ -3,6 +3,7 @@ package com.example.gymtrack_backend.repository;
 import com.example.gymtrack_backend.entities.Asistencia;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -23,4 +24,11 @@ public interface AsistenciaRepository extends JpaRepository<Asistencia, Long> {
     /** Cuenta ingresos con deuda de un socio desde una fecha (para membresía PENDIENTE_PAGO activa) */
     @Query("SELECT COUNT(a) FROM Asistencia a WHERE a.socio.id = :socioId AND a.conDeuda = true AND a.permitido = true AND a.tipo = 'ENTRADA' AND a.fecha >= :desde")
     long countIngresosConDeuda(@Param("socioId") Long socioId, @Param("desde") java.time.LocalDate desde);
+
+    /**
+     * Cuenta entradas PERMITIDAS de un socio dentro del período de una membresía.
+     * Se usa para punch-cards (planes por cantidad de ingresos).
+     */
+    @Query("SELECT COUNT(a) FROM Asistencia a WHERE a.socio.id = :socioId AND a.tipo = 'ENTRADA' AND a.permitido = true AND a.fecha BETWEEN :desde AND :hasta")
+    long countEntradasEnPeriodo(@Param("socioId") Long socioId, @Param("desde") java.time.LocalDate desde, @Param("hasta") java.time.LocalDate hasta);
 }

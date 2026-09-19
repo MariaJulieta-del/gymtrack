@@ -47,6 +47,14 @@ public class Membresia {
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal precio;
 
+    /**
+     * Máximo de ingresos permitidos para esta membresía.
+     * NULL = membresía por tiempo (sin límite de entradas).
+     * > 0  = pase de X clases / entradas (punch-card).
+     */
+    @Column(name = "entradas_disponibles")
+    private Integer entradasDisponibles;
+
     // Registro de cuándo se creó
     @Column(name = "fecha_creacion", nullable = false, updatable = false)
     private LocalDateTime fechaCreacion;

@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS rutinas (
     nombre         VARCHAR(100) NOT NULL,
     descripcion    TEXT,
     fecha_creacion DATE         NOT NULL,
-    socio_id       BIGINT       NOT NULL,
+    socio_id       BIGINT       NULL,   -- NULL = rutina general/template sin socio asignado
     CONSTRAINT fk_rutinas_socio FOREIGN KEY (socio_id) REFERENCES socios(id)
 );
 

@@ -31,4 +31,7 @@ public interface RutinaRepository extends JpaRepository<Rutina, Long> {
      * Útil para cleanup al dar de baja a un socio.
      */
     void deleteBySocioId(Long socioId);
+
+    /** Rutinas generales sin socio asignado (templates del admin). */
+    List<Rutina> findBySocioIsNull();
 }

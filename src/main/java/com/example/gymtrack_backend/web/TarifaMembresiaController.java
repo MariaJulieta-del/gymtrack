@@ -5,6 +5,7 @@ import com.example.gymtrack_backend.entities.TarifaMembresia;
 import com.example.gymtrack_backend.service.TarifaMembresiaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
@@ -31,6 +32,7 @@ public class TarifaMembresiaController {
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<TarifaMembresiaResponseDTO> crear(@RequestBody Map<String, Object> body) {
         try {
             TarifaMembresia plan = new TarifaMembresia();
@@ -47,6 +49,7 @@ public class TarifaMembresiaController {
     }
 
     @PutMapping("/{tipo}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<TarifaMembresiaResponseDTO> actualizarPrecio(
             @PathVariable String tipo,
             @RequestBody Map<String, Object> body) {

@@ -21,4 +21,8 @@ public class MembresiaResponseDTO {
     private LocalDate fechaVencimiento;
     private BigDecimal precio;
     private LocalDateTime fechaCreacion;
+    /** Null = membresía por tiempo; > 0 = pase de N clases */
+    private Integer entradasDisponibles;
+    /** Cuántas entradas ya fueron usadas en esta membresía */
+    private Integer entradasUsadas;
 }

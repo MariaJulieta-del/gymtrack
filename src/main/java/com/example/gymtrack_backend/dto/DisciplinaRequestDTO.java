@@ -2,6 +2,7 @@ package com.example.gymtrack_backend.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
+import java.util.List;
 
 @Data
 public class DisciplinaRequestDTO {
@@ -12,4 +13,7 @@ public class DisciplinaRequestDTO {
     private String horario;
     private Integer cupoMaximo;
     private Boolean activa = true;
+    private List<String> diasSemana;
+    private String horaInicio;
+    private String horaFin;
 }

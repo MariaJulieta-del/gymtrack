@@ -16,4 +16,12 @@ public class EjercicioResponseDTO {
     private Integer orden;
     private Integer descansoSeg;
     private String notas;
+
+    // Info del catálogo (presente solo si el ejercicio está vinculado)
+    private Long ejercicioCatalogoId;
+    private Boolean esMaquina;
+    private String descripcionEjercicio;
+    private java.util.List<String> grupos;
+    private String imagenUrl;
+    private java.util.List<Long> maquinaIds;
 }

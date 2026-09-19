@@ -7,6 +7,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
@@ -46,8 +47,16 @@ public class MembresiaController {
         return ResponseEntity.ok(membresiaService.listarPorSocio(socioId));
     }
 
+    // GET /api/v1/membresias/proximas-a-vencer?dias=7 → membresías ACTIVAS que vencen pronto
+    @GetMapping("/proximas-a-vencer")
+    public ResponseEntity<List<MembresiaResponseDTO>> proximasAVencer(
+            @RequestParam(defaultValue = "7") int dias) {
+        return ResponseEntity.ok(membresiaService.listarProximasAVencer(dias));
+    }
+
     // POST /api/v1/membresias/pendiente → asignar plan sin pago (fiado)
     @PostMapping("/pendiente")
+    @PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO')")
     public ResponseEntity<?> crearPendiente(@RequestBody Map<String, Object> body) {
         try {
             Long   socioId  = Long.valueOf(body.get("socioId").toString());
@@ -62,6 +71,7 @@ public class MembresiaController {
 
     // PATCH /api/v1/membresias/{id}/estado → cancelar
     @PatchMapping("/{id}/estado")
+    @PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO')")
     public ResponseEntity<MembresiaResponseDTO> cambiarEstado(
             @PathVariable Long id,
             @RequestParam EstadoMembresia nuevoEstado) {

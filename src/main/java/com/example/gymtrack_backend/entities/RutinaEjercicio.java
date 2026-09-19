@@ -52,4 +52,9 @@ public class RutinaEjercicio {
     // Notas opcionales (ej: "peso recomendado: 60-70% 1RM")
     @Column(columnDefinition = "TEXT")
     private String notas;
+
+    // Vínculo opcional al catálogo de ejercicios (para mostrar descripción, máquina, etc.)
+    @ManyToOne(fetch = FetchType.LAZY, optional = true)
+    @JoinColumn(name = "ejercicio_catalogo_id", nullable = true)
+    private Ejercicio ejercicioCatalogo;
 }

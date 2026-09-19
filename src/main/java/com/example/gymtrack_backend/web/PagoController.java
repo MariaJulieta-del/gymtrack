@@ -7,6 +7,7 @@ import com.example.gymtrack_backend.service.PagoService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
@@ -30,6 +31,7 @@ public class PagoController {
 
     // POST /api/v1/pagos/con-membresia → registra pago y activa membresía en un paso
     @PostMapping("/con-membresia")
+    @PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO')")
     public ResponseEntity<?> registrarConMembresia(
             @Valid @RequestBody PagoConMembresiaRequestDTO dto) {
         try {
@@ -43,6 +45,7 @@ public class PagoController {
 
     // POST /api/v1/pagos/saldar-deuda → paga membresía PENDIENTE_PAGO y la activa
     @PostMapping("/saldar-deuda")
+    @PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO')")
     public ResponseEntity<?> saldarDeuda(@RequestBody Map<String, Object> body) {
         try {
             Long       membresiaId  = Long.valueOf(body.get("membresiaId").toString());

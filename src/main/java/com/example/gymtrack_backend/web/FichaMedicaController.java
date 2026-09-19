@@ -5,6 +5,7 @@ import com.example.gymtrack_backend.entities.FichaMedica;
 import com.example.gymtrack_backend.service.FichaMedicaService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -20,6 +21,7 @@ public class FichaMedicaController {
     }
 
     @PutMapping("/socio/{socioId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO')")
     public ResponseEntity<FichaMedica> guardar(@PathVariable Long socioId,
                                                 @RequestBody FichaMedicaRequestDTO dto) {
         return ResponseEntity.ok(service.guardar(socioId, dto));

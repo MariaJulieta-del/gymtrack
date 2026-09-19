@@ -20,4 +20,10 @@ public class MembresiaRequestDTO {
 
     // Fecha de inicio; si es null el servicio usa la fecha actual
     private LocalDate fechaInicio;
+
+    /**
+     * Máximo de ingresos permitidos (punch-card).
+     * Si es null → membresía por tiempo (comportamiento estándar).
+     */
+    private Integer entradasDisponibles;
 }

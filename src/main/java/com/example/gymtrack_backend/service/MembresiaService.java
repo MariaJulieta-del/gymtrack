@@ -65,8 +65,24 @@ public class MembresiaService {
         membresia.setFechaInicio(inicio);
         membresia.setFechaVencimiento(vencimiento);
         membresia.setPrecio(tarifa.getPrecio());
+        // entradasDisponibles se pasa desde el DTO en el flujo de creación manual;
+        // la tarifa podría tener un default, por ahora queda null (plan por tiempo).
 
         return membresiaRepository.save(membresia);
+    }
+
+    /**
+     * Versión extendida de crearMembresiaActiva que acepta entradas disponibles.
+     * Para planes tipo punch-card (pase de N clases).
+     */
+    @Transactional
+    public Membresia crearMembresiaActivaConEntradas(Long socioId, String planTipo, LocalDate fechaInicio, Integer entradasDisponibles) {
+        Membresia m = crearMembresiaActiva(socioId, planTipo, fechaInicio);
+        if (entradasDisponibles != null && entradasDisponibles > 0) {
+            m.setEntradasDisponibles(entradasDisponibles);
+            return membresiaRepository.save(m);
+        }
+        return m;
     }
 
     /**
@@ -126,6 +142,18 @@ public class MembresiaService {
             .stream().map(this::mapearAResponseDTO).collect(Collectors.toList());
     }
 
+    /** Membresías ACTIVAS que vencen dentro de los próximos `dias` días */
+    public List<MembresiaResponseDTO> listarProximasAVencer(int dias) {
+        LocalDate hoy   = LocalDate.now();
+        LocalDate hasta = hoy.plusDays(dias);
+        return membresiaRepository
+                .findByEstadoMembresiaAndFechaVencimientoBetween(EstadoMembresia.ACTIVA, hoy, hasta)
+                .stream()
+                .sorted(java.util.Comparator.comparing(m -> m.getFechaVencimiento()))
+                .map(this::mapearAResponseDTO)
+                .collect(Collectors.toList());
+    }
+
     // ──────────────────────────────────────────────
     // CAMBIO DE ESTADO
     // ──────────────────────────────────────────────
@@ -161,6 +189,8 @@ public class MembresiaService {
         dto.setFechaVencimiento(m.getFechaVencimiento());
         dto.setPrecio(m.getPrecio());
         dto.setFechaCreacion(m.getFechaCreacion());
+        dto.setEntradasDisponibles(m.getEntradasDisponibles());
+        // entradasUsadas se calcula en servicio con query cuando sea necesario
         return dto;
     }
 }

@@ -28,4 +28,7 @@ public class EjercicioRequestDTO {
 
     @Size(max = 500)
     private String notas;
+
+    /** ID del ejercicio en el catálogo (opcional — para vincular descripción y máquina) */
+    private Long ejercicioCatalogoId;
 }
