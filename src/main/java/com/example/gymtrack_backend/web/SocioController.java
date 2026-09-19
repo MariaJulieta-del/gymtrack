@@ -15,10 +15,16 @@ public class SocioController {
     @Autowired
     private SocioService socioService;
 
-    // GET - Obtener todos los socios
+    // GET - Obtener socios activos
     @GetMapping
     public List<Socio> obtenerTodos() {
         return socioService.obtenerTodos();
+    }
+
+    // GET - Obtener TODOS los socios (activos + inactivos)
+    @GetMapping("/todos")
+    public List<Socio> obtenerTodosConInactivos() {
+        return socioService.obtenerTodosConInactivos();
     }
 
     // GET- read - Obtener socio por ID
@@ -56,6 +62,27 @@ public class SocioController {
         try {
             socioService.darDeBaja(id);
             return ResponseEntity.ok().build();
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    // DELETE - Eliminación física (solo socios inactivos)
+    @DeleteMapping("/{id}/permanente")
+    public ResponseEntity<Void> eliminarPermanente(@PathVariable Long id) {
+        try {
+            socioService.eliminarPermanente(id);
+            return ResponseEntity.noContent().build();
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    // PUT - Reactivar socio dado de baja
+    @PutMapping("/{id}/reactivar")
+    public ResponseEntity<Socio> reactivar(@PathVariable Long id) {
+        try {
+            return ResponseEntity.ok(socioService.reactivar(id));
         } catch (RuntimeException e) {
             return ResponseEntity.notFound().build();
         }

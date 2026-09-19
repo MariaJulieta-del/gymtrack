@@ -19,4 +19,8 @@ public interface AsistenciaRepository extends JpaRepository<Asistencia, Long> {
     Long countSociosHoy(LocalDate fecha);
 
     boolean existsBySocioIdAndFechaAndTipo(Long socioId, LocalDate fecha, String tipo);
+
+    /** Cuenta ingresos con deuda de un socio desde una fecha (para membresía PENDIENTE_PAGO activa) */
+    @Query("SELECT COUNT(a) FROM Asistencia a WHERE a.socio.id = :socioId AND a.conDeuda = true AND a.permitido = true AND a.tipo = 'ENTRADA' AND a.fecha >= :desde")
+    long countIngresosConDeuda(@Param("socioId") Long socioId, @Param("desde") java.time.LocalDate desde);
 }

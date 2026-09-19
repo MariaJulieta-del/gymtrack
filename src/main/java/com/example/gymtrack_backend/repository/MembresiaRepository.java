@@ -22,6 +22,13 @@ public interface MembresiaRepository extends JpaRepository<Membresia, Long> {
     /** Todas las membresías de un estado específico (ej: listar todas las ACTIVAS) */
     List<Membresia> findByEstadoMembresia(EstadoMembresia estado);
 
+    /** Cuenta socios activos para un tipo de plan */
+    @Query("SELECT COUNT(m) FROM Membresia m WHERE m.tipoMembresia = :tipo AND m.estadoMembresia = 'ACTIVA'")
+    long countActivosByTipo(@Param("tipo") String tipo);
+
+    /** Verifica si un socio ya tiene una membresía activa */
+    boolean existsBySocioIdAndEstadoMembresia(Long socioId, EstadoMembresia estado);
+
     /**
      * Marca como VENCIDAS todas las membresías ACTIVAS cuya fechaVencimiento
      * ya pasó. Se puede llamar desde un @Scheduled diario.

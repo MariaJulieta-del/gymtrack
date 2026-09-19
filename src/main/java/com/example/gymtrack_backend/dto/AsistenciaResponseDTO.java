@@ -18,4 +18,5 @@ public class AsistenciaResponseDTO {
     private String    tipo;
     private Boolean   permitido;
     private String    observacion;
+    private Boolean   conDeuda;
 }

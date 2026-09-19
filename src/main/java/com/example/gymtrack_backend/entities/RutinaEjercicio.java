@@ -45,7 +45,11 @@ public class RutinaEjercicio {
     @Column(nullable = false)
     private Integer orden;
 
-    // Notas opcionales (ej: "descanso 60s", "técnica: agarre neutro")
+    // Tiempo de descanso recomendado entre series (en segundos)
+    @Column(name = "descanso_seg")
+    private Integer descansoSeg;
+
+    // Notas opcionales (ej: "peso recomendado: 60-70% 1RM")
     @Column(columnDefinition = "TEXT")
     private String notas;
 }

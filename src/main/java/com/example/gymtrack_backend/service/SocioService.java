@@ -12,9 +12,14 @@ public class SocioService {
     @Autowired
     private SocioRepository socioRepository;
 
-    // Obtener todos los socios activos
+    // Obtener solo socios activos (comportamiento por defecto)
     public List<Socio> obtenerTodos() {
         return socioRepository.findByActivoTrue();
+    }
+
+    // Obtener TODOS los socios, activos e inactivos (para vista completa)
+    public List<Socio> obtenerTodosConInactivos() {
+        return socioRepository.findAll();
     }
 
     // Buscar socio por ID
@@ -50,6 +55,26 @@ public class SocioService {
         Socio socio = socioRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Socio no encontrado"));
         socio.setActivo(false);
+        socio.setEstado("INACTIVO");
         socioRepository.save(socio);
+    }
+
+    // Eliminación física (solo para socios inactivos)
+    public void eliminarPermanente(Long id) {
+        Socio socio = socioRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Socio no encontrado"));
+        if (Boolean.TRUE.equals(socio.getActivo())) {
+            throw new RuntimeException("Solo se puede eliminar permanentemente un socio inactivo");
+        }
+        socioRepository.deleteById(id);
+    }
+
+    // Reactivar un socio previamente dado de baja
+    public Socio reactivar(Long id) {
+        Socio socio = socioRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Socio no encontrado"));
+        socio.setActivo(true);
+        socio.setEstado("ACTIVO");
+        return socioRepository.save(socio);
     }
 }

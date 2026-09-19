@@ -1,5 +1,7 @@
 package com.example.gymtrack_backend.web;
 
+import com.example.gymtrack_backend.dto.EjercicioRequestDTO;
+import com.example.gymtrack_backend.dto.EjercicioResponseDTO;
 import com.example.gymtrack_backend.dto.RutinaRequestDTO;
 import com.example.gymtrack_backend.dto.RutinaResponseDTO;
 import com.example.gymtrack_backend.service.RutinaService;
@@ -7,11 +9,14 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 
 /**
  * Controller REST para el módulo de Rutinas.
- * Todos los endpoints requieren el header X-Socio-Id para identificar al propietario.
+ *
+ * Endpoints que usan X-Socio-Id validan que la rutina pertenezca al socio.
+ * GET /todas no requiere X-Socio-Id y es para uso del ADMIN.
  */
 @RestController
 @RequestMapping("/api/v1/rutinas")
@@ -22,79 +27,113 @@ public class RutinaController {
     private RutinaService rutinaService;
 
     // ──────────────────────────────────────────────
-    // GET /api/v1/rutinas
-    // Obtener todas las rutinas del socio
+    // RUTINAS
     // ──────────────────────────────────────────────
+
+    /** GET /api/v1/rutinas — rutinas del socio autenticado */
     @GetMapping
     public ResponseEntity<List<RutinaResponseDTO>> obtenerRutinas(
             @RequestHeader("X-Socio-Id") Long socioId) {
         try {
-            List<RutinaResponseDTO> rutinas = rutinaService.obtenerRutinas(socioId);
-            return ResponseEntity.ok(rutinas);
+            return ResponseEntity.ok(rutinaService.obtenerRutinas(socioId));
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().build();
         }
     }
 
-    // ──────────────────────────────────────────────
-    // GET /api/v1/rutinas/{id}
-    // Obtener una rutina específica
-    // ──────────────────────────────────────────────
+    /** GET /api/v1/rutinas/todas — todas las rutinas (solo ADMIN) */
+    @GetMapping("/todas")
+    public ResponseEntity<List<RutinaResponseDTO>> obtenerTodas() {
+        return ResponseEntity.ok(rutinaService.listarTodas());
+    }
+
+    /** GET /api/v1/rutinas/{id} — detalle de una rutina */
     @GetMapping("/{id}")
     public ResponseEntity<RutinaResponseDTO> obtenerRutina(
             @PathVariable Long id,
             @RequestHeader("X-Socio-Id") Long socioId) {
         try {
-            RutinaResponseDTO rutina = rutinaService.obtenerRutina(id, socioId);
-            return ResponseEntity.ok(rutina);
+            return ResponseEntity.ok(rutinaService.obtenerRutina(id, socioId));
         } catch (RuntimeException e) {
             return ResponseEntity.notFound().build();
         }
     }
 
-    // ──────────────────────────────────────────────
-    // POST /api/v1/rutinas
-    // Crear una nueva rutina
-    // ──────────────────────────────────────────────
+    /** POST /api/v1/rutinas — crear una nueva rutina */
     @PostMapping
     public ResponseEntity<RutinaResponseDTO> crearRutina(
             @RequestHeader("X-Socio-Id") Long socioId,
             @Valid @RequestBody RutinaRequestDTO requestDTO) {
         try {
-            RutinaResponseDTO nueva = rutinaService.crearRutina(socioId, requestDTO);
-            return ResponseEntity.ok(nueva);
+            return ResponseEntity.ok(rutinaService.crearRutina(socioId, requestDTO));
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().build();
         }
     }
 
-    // ──────────────────────────────────────────────
-    // PUT /api/v1/rutinas/{id}
-    // Actualizar una rutina existente
-    // ──────────────────────────────────────────────
+    /** PUT /api/v1/rutinas/{id} — actualizar una rutina */
     @PutMapping("/{id}")
     public ResponseEntity<RutinaResponseDTO> actualizarRutina(
             @PathVariable Long id,
             @RequestHeader("X-Socio-Id") Long socioId,
             @Valid @RequestBody RutinaRequestDTO requestDTO) {
         try {
-            RutinaResponseDTO actualizada = rutinaService.actualizarRutina(id, socioId, requestDTO);
-            return ResponseEntity.ok(actualizada);
+            return ResponseEntity.ok(rutinaService.actualizarRutina(id, socioId, requestDTO));
         } catch (RuntimeException e) {
             return ResponseEntity.notFound().build();
         }
     }
 
-    // ──────────────────────────────────────────────
-    // DELETE /api/v1/rutinas/{id}
-    // Eliminar una rutina
-    // ──────────────────────────────────────────────
+    /** DELETE /api/v1/rutinas/{id} — eliminar una rutina */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminarRutina(
             @PathVariable Long id,
             @RequestHeader("X-Socio-Id") Long socioId) {
         try {
             rutinaService.eliminarRutina(id, socioId);
+            return ResponseEntity.ok().build();
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    // ──────────────────────────────────────────────
+    // EJERCICIOS
+    // ──────────────────────────────────────────────
+
+    /** GET /api/v1/rutinas/{id}/ejercicios — lista de ejercicios de la rutina */
+    @GetMapping("/{id}/ejercicios")
+    public ResponseEntity<List<EjercicioResponseDTO>> obtenerEjercicios(
+            @PathVariable Long id,
+            @RequestHeader("X-Socio-Id") Long socioId) {
+        try {
+            return ResponseEntity.ok(rutinaService.obtenerEjercicios(id, socioId));
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    /** POST /api/v1/rutinas/{id}/ejercicios — agregar un ejercicio a la rutina */
+    @PostMapping("/{id}/ejercicios")
+    public ResponseEntity<EjercicioResponseDTO> agregarEjercicio(
+            @PathVariable Long id,
+            @RequestHeader("X-Socio-Id") Long socioId,
+            @Valid @RequestBody EjercicioRequestDTO dto) {
+        try {
+            return ResponseEntity.ok(rutinaService.agregarEjercicio(id, socioId, dto));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    /** DELETE /api/v1/rutinas/{id}/ejercicios/{ejId} — eliminar un ejercicio */
+    @DeleteMapping("/{id}/ejercicios/{ejId}")
+    public ResponseEntity<Void> eliminarEjercicio(
+            @PathVariable Long id,
+            @PathVariable Long ejId,
+            @RequestHeader("X-Socio-Id") Long socioId) {
+        try {
+            rutinaService.eliminarEjercicio(ejId, id, socioId);
             return ResponseEntity.ok().build();
         } catch (RuntimeException e) {
             return ResponseEntity.notFound().build();

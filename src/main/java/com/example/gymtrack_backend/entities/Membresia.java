@@ -1,7 +1,6 @@
 package com.example.gymtrack_backend.entities;
 
 import com.example.gymtrack_backend.entities.enums.EstadoMembresia;
-import com.example.gymtrack_backend.entities.enums.TipoMembresia;
 import jakarta.persistence.*;
 import lombok.Data;
 import java.math.BigDecimal;
@@ -27,10 +26,9 @@ public class Membresia {
     @JoinColumn(name = "socio_id", nullable = false)
     private Socio socio;
 
-    // Tipo de membresía (determina la duración)
-    @Enumerated(EnumType.STRING)
-    @Column(name = "tipo_membresia", nullable = false, length = 20)
-    private TipoMembresia tipoMembresia;
+    // Tipo de membresía — referencia a tarifas_membresia.tipo
+    @Column(name = "tipo_membresia", nullable = false, length = 50)
+    private String tipoMembresia;
 
     // Estado actual de la membresía
     @Enumerated(EnumType.STRING)
